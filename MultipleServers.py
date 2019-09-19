@@ -56,8 +56,6 @@ while (True):
                     serversTimes[i] = na
                     td[i] = t + processTime(serviceTime)
                     break
-            print(td)
-            break
 
 
         elif queue > servers:
