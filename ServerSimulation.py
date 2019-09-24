@@ -33,6 +33,11 @@ tiempoDesocupado = 0
 tiempoEnCola = 0
 tiempoEnColaTa = 0
 
+tiempoPorServidor = [0] * servers
+tiempoPorServidorTa = [0] * servers
+
+serversRequestCounter = [0] * servers
+
 # nombre del servidor
 if servers == 1:
     print("----------------- Gorilla Megacomputing -----------------")
@@ -55,6 +60,8 @@ while (True):
                 if s[i] == 0:
                     td[i] = processTime(t)
                     s[i] = na
+                    tiempoPorServidorTa[i] = t
+                    serversRequestCounter[i] += 1
                     break
 
         a.append(t)
@@ -67,7 +74,8 @@ while (True):
 
     # salida antes que entrada
     elif min(td) < ta and min(td) <= T:
-        iServer = s.index(min(i for i in s if i > 0))
+        iServer = td.index(min(td))
+        tiempoPorServidor[iServer] += min(td) - tiempoPorServidorTa[iServer]
         t = td[iServer]
         n -= 1
         nd += 1
@@ -76,6 +84,8 @@ while (True):
         if n >= servers:
             td[iServer] = processTime(t)
             s[iServer] = max(s) + 1
+            tiempoPorServidorTa[iServer] = t
+            serversRequestCounter[iServer] += 1
 
         # caso si no hay requests en cola
         elif n < servers:
@@ -95,7 +105,8 @@ while (True):
 
     # tiempo acabado, con procesos por terminar
     elif min(ta, min(td)) > T and n > 0:
-        iServer = s.index(min(i for i in s if i > 0))
+        iServer = td.index(min(td))
+        tiempoPorServidor[iServer] += min(td) - tiempoPorServidorTa[iServer]
         t = td[iServer]
         n -= 1
         nd += 1
@@ -104,11 +115,13 @@ while (True):
         if n >= servers:
             td[iServer] = processTime(t)
             s[iServer] = max(s) + 1
+            tiempoPorServidorTa[iServer] = t
 
         # se usa para calcular tiempo desocupado
         elif n < servers:
             td[iServer] = math.inf
             s[iServer] = 0
+            tiempoPorServidorTa[iServer] = t
 
         d.append(t)
 
@@ -122,6 +135,7 @@ while (True):
         break;
 
 # estadisticas
+print("Estadisticas Generales")
 print("Cantidad de Solicitudes: " + str(na))
 print("Tiempo de Simulacion: " + str(T))
 print("Tiempo Ocupado: " + str(d[len(d)-1] - tiempoDesocupado))
@@ -130,3 +144,14 @@ print("Tiempo en Cola: " + str(tiempoEnCola))
 print("Tiempo Promedio en Cola: " + str(tiempoEnCola/na))
 print("Promedio de Request en Cola por Segundo: " + str(nq/d[len(d)-1]))
 print("Tiempo de Ultima Salida: " + str(d[len(d)-1]))
+print("")
+print("Por Servidor")
+print("Requests por Servidor: ")
+for i in serversRequestCounter:
+    print(str(" servidor ") + str(serversRequestCounter.index(i)) + ":    " + str(i))
+print("Tiempo Ocupado por Servidor: ")
+for i in tiempoPorServidor:
+    print(str(" servidor ") + str(tiempoPorServidor.index(i)) + ":    " + str(i))
+print("Tiempo Desocupado por Servidor: ")
+for i in tiempoPorServidor:
+    print(str(" servidor ") + str(tiempoPorServidor.index(i)) + ":    " + str(d[len(d)-1] - i))
